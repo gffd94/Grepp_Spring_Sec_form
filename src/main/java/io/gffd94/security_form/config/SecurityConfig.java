@@ -35,11 +35,11 @@ public class SecurityConfig {
                 // 로그인 폼
 //                .formLogin(form -> { // 직접 커스터마이징한 로그인 설정방식
 //                    form.failureForwardUrl("/login?error=true") // 주소창을 안바꾸고 실패 페이지로 url의 메세지를 보여주고 싶을때
-//                            .successForwardUrl("/") // 로그인 성공시 page는 변경하는데 주소url값은 그대로
+//                            .successForwardUrl("/") // 로그인 성공시 후처리 하고 싶을 때
 ////                            .defaultSuccessUrl("/happy",true) // 로그인 성공시 해당 url로 명확하게 이동하고 싶을 때
 //                            .usernameParameter("loginId") // parameter name = "loginId"로 설정한 값을 가져옴
 //                            .passwordParameter("loginPwd") // parameter name = "loginPwd"로 설정한 값을 가져옴
-//                            .loginProcessingUrl("/signin") // post방식
+//                            .loginProcessingUrl("/signin") // post방식 - 로그인 요청이 들어오면 해당 URL로 들어와서 요청을 처리한다. 
 //                            .loginPage("/signin")
 //                            .permitAll(); // login 실행
 //                })
@@ -64,7 +64,16 @@ public class SecurityConfig {
                                     .anonymous()
                                     // /user/*로 시작하는 모든 요청은 Role_MEMBER 권한이 있어야한다.
                                     .requestMatchers("/users/**")
-                                    .hasRole("MEMBER")
+//                                    .hasAnyRole("MEMBER","MANAGER", "ADMIN")
+                                    .hasAnyAuthority("MEMBER", "MANAGER", "ADMIN")
+                                    .requestMatchers("/manager/**")
+//                                    .hasAnyRole("MANAGER", "ADMIN")// ROLE_가 붙어있는 문자열로 들어감
+                                    .hasAnyAuthority("MANAGER", "ADMIN")
+                                    .requestMatchers("/admin/**")
+//                                    .hasRole("ADMIN")
+                                    // 얘는 진짜 문자열 ADMIN만 들어감
+//                                    .hasAuthority("ADMIN")
+                                    .hasAuthority("ADMIN")
                                     // 그 외 요청은 로그인만 되어있으면 OK
                                     .anyRequest()
                                     .authenticated();
@@ -75,28 +84,31 @@ public class SecurityConfig {
                 .build();
     }
 
-        // 사용자 등록
-    @Bean
-    public UserDetailsService userDetailsService() {
-        // InMemory 방식 : 메모리 내에 사용자 정보를 저장하는 객체
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-
-        String targetPwd = "1234";
-        String encode = passwordEncoder().encode(targetPwd);
-
-        log.info("encode = {}", encode);
-
-        manager.createUser(
-                // user 라는 이름으로 비밀번호는 BCrypt방식으로 저장
-                // 사용자에게 role을 지정하기 않았기 떄문에 /user/** 요청은 거절됨
-                // withUsername(...).password(...).roles("MEMBER")로 바꾸면 권한 부여 가능
-                User.withUsername("user")
-                        .password(encode)
-                        .build()
-        );
-
-        return manager;
-    }
+//        // 사용자 등록
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        // InMemory 방식 : 메모리 내에 사용자 정보를 저장하는 객체
+//        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+//
+//        String targetPwd = "1234";
+//        String encode = passwordEncoder().encode(targetPwd);
+//
+//        log.info("encode = {}", encode);
+//
+//        manager.createUser(
+//                // user 라는 이름으로 비밀번호는 BCrypt방식으로 저장
+//                // 사용자에게 role을 지정하기 않았기 떄문에 /user/** 요청은 거절됨
+//                // withUsername(...).password(...).roles("MEMBER")로 바꾸면 권한 부여 가능
+//                User.withUsername("user")
+//                        .password(encode)
+////                        .roles("MANAGER") // ROLE_MANGER로 들어간다는 뜻.
+//                        .authorities("ADMIN")// 문자열 ADMIN만 들어감
+//                        .build()
+//
+//        );
+//
+//        return manager;
+//    }
 
 
 
